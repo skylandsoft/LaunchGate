@@ -54,6 +54,7 @@ class DialogManager {
             alertController.addAction(updateAction(updateURL))
 
         case .requiredUpdate(let updateURL):
+            alertController.addAction(closeAction())
             alertController.addAction(updateAction(updateURL))
         }
 
@@ -86,6 +87,21 @@ class DialogManager {
         let alertTitle = NSLocalizedString("Dismiss", comment: "Button title for dismissing the update AlertView")
 
         return UIAlertAction(title: alertTitle, style: .default)
+    }
+    
+    private func closeAction() -> UIAlertAction {
+        let alertTitle = NSLocalizedString("Close", comment: "Button title for closing the application")
+
+        let updateHandler: (UIAlertAction) -> Void = { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now()) {
+                UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                DispatchQueue.main.asyncAfter(deadline: .now()) {
+                   exit(0)
+                }
+            }
+        }
+        
+        return UIAlertAction(title: alertTitle, style: .default, handler: updateHandler)
     }
 
     private func updateAction(_ updateURL: URL) -> UIAlertAction {
